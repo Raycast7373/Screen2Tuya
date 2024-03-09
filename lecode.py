@@ -14,11 +14,10 @@ def set_high_priority(pid=None):
 
 # Call the function to set high priority for the current script
 set_high_priority()
-DEVICEID = "bf6aab8ebe79328335hpcg"
-DEVICEIP = "192.168.1.94"
-DEVICEKEY = "0d9e3f6b45165b06"
+DEVICEID = " "
+DEVICEIP = " "
+DEVICEKEY = " "
 DEVICEVERS = "3.3"
-refresh_rate = 1  # higher is slower
 
 # Check for environmental variables and always use those if available
 DEVICEID = os.getenv("DEVICEID", DEVICEID)
