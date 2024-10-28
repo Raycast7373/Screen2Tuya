@@ -1,9 +1,15 @@
 # Global boolean variables
-USE_CUPY = False  # Set to True to use CuPy, False to use NumPy
-USE_WHITE_MODE = True  # Set to True to enable white mode functionality
-USE_DOMINANT_COLOR_IN_WHITE_MODE = False  # Set to True to use find_dominant_color in white mode
-TimeDebug = False
-FPSEnabled = True
+USE_CUPY = False  # Set to True to use CuPy, False to use NumPy, NumPy seems to be faster
+USE_WHITE_MODE = True  # Set to True to enable white mode functionality, this will make the lights automatically switch to white mode to get a more natural white
+USE_DOMINANT_COLOR_IN_WHITE_MODE = False  # Set to True to use find_dominant_color in white mode, very slow and doesnt really improve the result
+TimeDebug = False # execution duration of some functions for debugging
+FPSEnabled = False # shows the speed in which the for loop processes the image
+target_hz = 45  # Target frequency in Hz
+WhiteBrightnessModifier = 13 # Affects brightness when AllowFullDark is True, 13 is darkest and everything higher and lower than it seems to be brighter
+OtherLightModifier = 4 # 2 is default but i like my lights to be dark when my screen is dark
+MaxWhiteBrightness = 30 # Goes up to 100
+AllowFullDark = False # Allows lights to go off in case of black screen
+
 
 import os
 # Set up devices using your configurations
@@ -90,7 +96,7 @@ def is_close_to_white(color, threshold=200):
     r, g, b = color
     return r >= threshold and g >= threshold and b >= threshold
 
-def is_dark_color(color, threshold=50):
+def is_dark_color(color, threshold=60):
     """Check if the RGB color is dark or grayish."""
     r, g, b = color
     brightness = (r + g + b) / 3
@@ -147,13 +153,21 @@ def rgb_to_color_temp(rgb):
 def set_device_color(device, color):
     """Set the device color or adjust for white mode based on average RGB color."""
     if USE_WHITE_MODE and (is_close_to_white(color) or is_dark_color(color)):
-        kelvin_temp = rgb_to_kelvin(color)
+        #kelvin_temp = rgb_to_kelvin(color)
         brightness = rgb_to_brightness(color)
         color_temp = rgb_to_color_temp(color)
-
-        if is_dark_color(color) and False:  # Check condition for brightness adjustment
-            brightness = max(10, brightness // 2)  # Reduce brightness to avoid turning off completely
-
+        #print(is_dark_color(color))
+        if is_dark_color(color) and not AllowFullDark:  # Check condition for brightness adjustment
+            brightness = max(0, brightness // OtherLightModifier)  # Reduce brightness to avoid turning off completely
+        elif brightness > WhiteBrightnessModifier:
+            brightness = brightness - WhiteBrightnessModifier
+        if brightness > MaxWhiteBrightness:
+            brightness = MaxWhiteBrightness
+        #if color_temp > 82:
+        #    color_temp = 100
+        #elif color_temp >= 15:
+        #    color_temp = 0
+        #print(color_temp)
         device.set_mode('white')  # Switch to white mode
         device.set_white_percentage(brightness, color_temp)  # Set to calculated brightness and temperature
     else:
@@ -201,7 +215,7 @@ def color_for_regions():
 
 # Usage example
 gc.enable()
-target_hz = 60  # Target frequency in Hz
+
 target_interval = 1 / target_hz
 last_bottom_left_color, last_top_right_color = (0, 0, 0), (0, 0, 0)
 color_generator = color_for_regions()
@@ -236,5 +250,6 @@ while True:
     if FPSEnabled:
         fps = 1 / elapsed_time if elapsed_time > 0 else 0  # Calculate frequency in Hz
         print(f"Iteration executed in {elapsed_time:.4f} seconds ({fps:.2f} FPS)")
+        #print(sleep_time)
 
     time.sleep(sleep_time)
