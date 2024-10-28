@@ -4,6 +4,8 @@ USE_WHITE_MODE = True  # Set to True to enable white mode functionality
 USE_DOMINANT_COLOR_IN_WHITE_MODE = False  # Set to True to use find_dominant_color in white mode
 TimeDebug = False
 FPSEnabled = True
+
+import os
 # Set up devices using your configurations
 
 DEVICEID = os.getenv("DEVICEID", "<ID Here>")
@@ -17,7 +19,7 @@ DEVICEKEY2 = os.getenv("DEVICEKEY2", "<Key Here>")
 DEVICEVERS2 = os.getenv("DEVICEVERS", "3.3")
 
 
-import os
+
 if USE_CUPY:
     import cupy as cp
 import mss
